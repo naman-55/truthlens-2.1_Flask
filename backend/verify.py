@@ -283,6 +283,9 @@ def configure_gemini() -> str:
     api_key = (
         os.environ.get("GEMINI_API_KEY")
         or os.environ.get("GOOGLE_API_KEY")
+        or os.environ.get("VITE_GEMINI_API_KEY")
+        or os.environ.get("VITE_API_KEY")
+        or os.environ.get("VITE_API_ID")
         or ""
     ).strip().strip("'\"")
 
@@ -522,9 +525,10 @@ def verify_content(text: str, image_data: Optional[dict]) -> dict:
                 if is_service_unavailable_error(last_model_error):
                     return build_service_unavailable_result("service temporarily unavailable", text, bool(image_data))
                 if is_permission_denied_error(last_model_error):
-                    raise PermissionError(
-                        "PERMISSION_DENIED (403): Your Gemini API key is blocked or restricted. "
-                        "Create a new key at https://aistudio.google.com/apikey and update .env."
+                    return build_service_unavailable_result(
+                        "Gemini API key blocked/restricted (403)",
+                        text,
+                        bool(image_data),
                     )
 
             raise RuntimeError(
@@ -596,9 +600,10 @@ def verify_content(text: str, image_data: Optional[dict]) -> dict:
         if "400" in message or "invalid_argument" in lower:
             raise ValueError("Invalid request sent to Gemini. Please check your input and retry.")
         if "403" in message or "permission_denied" in lower:
-            raise PermissionError(
-                "PERMISSION_DENIED (403): This API key is blocked. "
-                "Create a new key at https://aistudio.google.com/apikey."
+            return build_service_unavailable_result(
+                "Gemini API key blocked/restricted (403)",
+                text,
+                bool(image_data),
             )
 
         raise RuntimeError(message or "Failed to verify the content. Please try again.")
