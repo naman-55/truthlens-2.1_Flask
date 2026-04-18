@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+:root {
+	color-scheme: dark;
+}
+
+html,
+body,
+#root {
+	min-height: 100%;
+}
+
+body {
+	min-height: 100dvh;
+}
+
+/* Progressive enhancement for foldables and segmented viewports. */
+@media (horizontal-viewport-segments: 2) {
+	.container {
+		max-width: min(1400px, 100vw - 2rem);
+		padding-inline: max(0.75rem, env(viewport-segment-left 0 0));
+	}
+}
+
+@media (vertical-viewport-segments: 2) {
+	.container {
+		padding-block: 0.5rem;
+	}
+}
